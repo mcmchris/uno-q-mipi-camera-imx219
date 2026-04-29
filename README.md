@@ -17,7 +17,7 @@ By using lower-level settings and bypassing the default hardware ISP, you can ge
 **1. Clone the repository:**
 
 ```bash
-git clone [https://github.com/mcmchris/uno-q-mipi-camera-imx219.git](https://github.com/mcmchris/uno-q-mipi-camera-imx219.git)
+git clone https://github.com/mcmchris/uno-q-mipi-camera-imx219.git
 cd uno-q-mipi-camera-imx219
 ```
 
