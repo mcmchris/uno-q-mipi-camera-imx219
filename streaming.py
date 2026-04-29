@@ -250,6 +250,14 @@ def update_settings():
     global color_settings
     data = request.json
     
+    if 'profile' in data:
+        new_profile_name = data['profile']
+        profile_path = os.path.join('color-profiles', new_profile_name)
+        # Solo lo recargamos si el archivo existe para evitar que el servidor colapse
+        if os.path.exists(profile_path):
+            print(f"Recargando perfil de color en vivo: {new_profile_name}")
+            imx219_profile = load_camera_profiles(profile_path)
+
     # 1. Update software ISP variables
     color_settings['r_gain'] = float(data.get('r_gain', color_settings['r_gain']))
     color_settings['g_gain'] = float(data.get('g_gain', color_settings['g_gain']))
