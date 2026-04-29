@@ -58,7 +58,8 @@ color_settings = {
     'b_gain': 1.15,
     'contrast': 1.95,
     'brightness': 5,
-    'color_temp': 6100 # Base color temperature (daylight)
+    'color_temp': 6100, # Base color temperature (daylight)
+    'current_profile': 'imx219_noir_pisp.json'
 }
 
 # ==========================================
@@ -252,11 +253,19 @@ def update_settings():
     
     if 'profile' in data:
         new_profile_name = data['profile']
-        profile_path = os.path.join('color-profiles', new_profile_name)
-        # Solo lo recargamos si el archivo existe para evitar que el servidor colapse
-        if os.path.exists(profile_path):
-            print(f"Recargando perfil de color en vivo: {new_profile_name}")
-            imx219_profile = load_camera_profiles(profile_path)
+        
+        # Only update if the profile has actually changed
+        if new_profile_name != color_settings.get('current_profile'):
+            profile_path = os.path.join('color-profiles', new_profile_name)
+            
+            if os.path.exists(profile_path):
+                print(f"🔄 Cambiando físicamente a perfil: {new_profile_name}")
+                new_profile_data = load_camera_profiles(profile_path)
+                
+                imx219_profile.clear()
+                imx219_profile.update(new_profile_data)
+                
+                color_settings['current_profile'] = new_profile_name
 
     # 1. Update software ISP variables
     color_settings['r_gain'] = float(data.get('r_gain', color_settings['r_gain']))
