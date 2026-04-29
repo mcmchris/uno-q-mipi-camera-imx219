@@ -2,15 +2,34 @@
 
 A custom V4L2 RAW capture pipeline and Python Software ISP for the IMX219 MIPI camera. This repository bypasses standard hardware memory limits to capture full 8MP 10-bit frames, applying JSON color profiles (PiSP) for precise colorimetry, Auto White Balance (AWB), and hardware exposure control.
 
+![](assets/thumbnail.png)
+
 ## 🛠️ Hardware Requirements
 To run this project, you will need the following hardware:
 * **Arduino UNO Q**
 * **Arduino UNO Media Carrier**
 * **IMX219 MIPI Camera Module** (Standard or NOIR)
 
+**Note:** Your Arduino UNO Q must be flashed with one of the latest image versions (> 523).
+
 ## 🎨 Color Correction & ISP Bypass
 
 By using lower-level settings and bypassing the default hardware ISP, you can get much better photos.
+
+## 📷 Enable the Media Carrier
+
+Some overlays are needed to enable the Arduino Media Carrier:
+
+```bash
+cd /boot/efi/dtb/qcom/ # navigate to this directory
+
+sudo fdtoverlay -i qrb2210-arduino-imola-base.dtb -o qrb2210-arduino-imola.dtb qrb2210-arduino-imola-carrier-media.dtbo qrb2210-arduino-imola-carrier-media-camera-imx219-csi1-2lanes.dtbo qrb2210-arduino-imola-video_sound-usbc.dtbo
+```
+
+**Note:** Use the `.dtbo` for the right connector where your MIPI camera is attached.
+
+- **CAMERA0:** `qrb2210-arduino-imola-carrier-media-camera-imx219-csi0-2lanes.dtbo`
+- **CAMERA1:** `qrb2210-arduino-imola-carrier-media-camera-imx219-csi1-2lanes.dtbo`
 
 ## ⚙️ Installation
 
