@@ -160,6 +160,8 @@ def generate_frames():
     
     width, height = 1640, 1232
     target_w, target_h = 1640, 1232 # Streaming resolution
+
+    os.system(f"v4l2-ctl -d {vid_node} --set-fmt-video=width={width},height={height},pixelformat=pRAA > /dev/null 2>&1")
     
     cap = cv2.VideoCapture(vid_node, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
