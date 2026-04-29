@@ -9,17 +9,8 @@ To run this project, you will need the following hardware:
 * **IMX219 MIPI Camera Module** (Standard or NOIR)
 
 ## 🎨 Color Correction & ISP Bypass
-By using lower-level settings and bypassing the default hardware ISP, you can get much better photos:
 
-![Color corrected photo (full resolution)](assets/the_take.png)
-
-Instead of relying on standard high-level video capture methods—which often struggle with memory allocation for high-resolution 10-bit RAW streams and apply generic, uncalibrated color profiles—this pipeline extracts the RAW DMA frames directly from the kernel using `v4l2-ctl`. 
-
-This approach allows us to build a custom Software Image Signal Processor (ISP) pipeline in Python. By manually demosaicing the RAW Bayer data and injecting the official JSON color matrices (CCM) and Auto White Balance (AWB) curves tailored for the IMX219 sensor, we regain absolute control over the color science. This method also allows us to:
-* Directly manipulate the physical analog gain and exposure registers of the sensor.
-* Safely handle the massive 8-Megapixel (3280x2464) data payload without memory bottlenecking.
-
-The result is a sharp, color-accurate photograph that perfectly matches the physical lighting of the environment.
+By using lower-level settings and bypassing the default hardware ISP, you can get much better photos.
 
 ## ⚙️ Installation
 
