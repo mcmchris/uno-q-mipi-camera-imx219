@@ -53,12 +53,12 @@ else:
 # CONFIGURATION AND STATE
 # ==========================================
 color_settings = {
-    'r_gain': 1.0,  # Act as extra multipliers on the JSON profile
-    'g_gain': 1.0,
-    'b_gain': 1.0,
-    'contrast': 1.2,
+    'r_gain': 1.2,  # Act as extra multipliers on the JSON profile
+    'g_gain': 0.9,
+    'b_gain': 1.15,
+    'contrast': 1.95,
     'brightness': 5,
-    'color_temp': 4500 # Base color temperature (daylight)
+    'color_temp': 6100 # Base color temperature (daylight)
 }
 
 # ==========================================
