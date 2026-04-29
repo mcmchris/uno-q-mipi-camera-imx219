@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMX219 RAW - Advanced PiSP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans selection:bg-green-500 selection:text-white">
+
+    <div class="container mx-auto p-6 max-w-6xl">
+        <header class="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
+            <h1 class="text-3xl font-bold text-green-400">IMX219 PiSP Tuner</h1>
+            <span class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-xs font-mono border border-blue-700">RAW V4L2 -> JSON PiSP -> OpenCV</span>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-7 bg-black rounded-xl overflow-hidden shadow-2xl border border-gray-800 self-start">
+                <img src="{{ url_for('video_feed') }}" class="w-full h-auto object-contain" alt="Camera Feed">
+            </div>
+
+            <div class="lg:col-span-5 bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden">
+                
+                <div class="p-5 border-b border-gray-700 bg-gray-800/50">
+                    <h3 class="text-xs uppercase tracking-widest text-yellow-500 font-bold mb-4 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        Hardware V4L2 (Physical Light)
+                    </h3>
+                    
+                    <div class="mb-4">
+                        <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">
+                            Exposure <span id="val_exposure" class="text-yellow-400 font-mono">1700</span>
+                        </label>
+                        <input type="range" id="inp_exposure" min="10" max="1703" step="5" value="1700" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" oninput="updateSettings('exposure', this.value)">
+                    </div>
+
+                    <div>
+                        <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">
+                            Analog Gain <span id="val_analogue_gain" class="text-yellow-400 font-mono">210</span>
+                        </label>
+                        <input type="range" id="inp_analogue_gain" min="0" max="232" step="2" value="210" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" oninput="updateSettings('analogue_gain', this.value)">
+                    </div>
+                </div>
+
+                <div class="p-5">
+                    <h3 class="text-xs uppercase tracking-widest text-green-400 font-bold mb-4 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                        Software ISP (Color & Matrix)
+                    </h3>
+
+                    <div class="mb-5 pb-5 border-b border-gray-700">
+                        <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">
+                            Color Temp (K) <span id="val_color_temp" class="text-green-400 font-mono">4500</span>
+                        </label>
+                        <input type="range" id="inp_color_temp" min="2500" max="8000" step="50" value="4500" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500" oninput="updateSettings('color_temp', this.value)">
+                        <p class="text-xs text-gray-500 mt-1">Interpolates CCM and AWB matrices from the official JSON profile.</p>
+                    </div>
+
+                    <div class="space-y-4 mb-5 pb-5 border-b border-gray-700">
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-red-400 mb-1">Red Multiplier <span id="val_r_gain" class="font-mono">1.00</span></label>
+                            <input type="range" id="inp_r_gain" min="0.5" max="2.0" step="0.05" value="1.0" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500" oninput="updateSettings('r_gain', this.value)">
+                        </div>
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-green-400 mb-1">Green Multiplier <span id="val_g_gain" class="font-mono">1.00</span></label>
+                            <input type="range" id="inp_g_gain" min="0.5" max="2.0" step="0.05" value="1.0" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500" oninput="updateSettings('g_gain', this.value)">
+                        </div>
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-blue-400 mb-1">Blue Multiplier <span id="val_b_gain" class="font-mono">1.00</span></label>
+                            <input type="range" id="inp_b_gain" min="0.5" max="2.0" step="0.05" value="1.0" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500" oninput="updateSettings('b_gain', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">Contrast (OpenCV) <span id="val_contrast" class="font-mono">1.20</span></label>
+                            <input type="range" id="inp_contrast" min="0.5" max="3.0" step="0.05" value="1.2" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-gray-400" oninput="updateSettings('contrast', this.value)">
+                        </div>
+                        <div>
+                            <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">Brightness (OpenCV) <span id="val_brightness" class="font-mono">5</span></label>
+                            <input type="range" id="inp_brightness" min="-50" max="50" step="1" value="5" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-gray-400" oninput="updateSettings('brightness', this.value)">
+                        </div>
+                    </div>
+
+                    <button onclick="resetValues()" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                        Reset to Factory Calibration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial camera state
+        let currentSettings = {
+            exposure: 1700,
+            analogue_gain: 210,
+            color_temp: 4500,
+            r_gain: 1.0,
+            g_gain: 1.0,
+            b_gain: 1.0,
+            contrast: 1.2,
+            brightness: 5
+        };
+
+        function updateSettings(key, value) {
+            // Update the local object
+            currentSettings[key] = parseFloat(value);
+            
+            // Update the UI text (format decimals when needed)
+            let displayValue = currentSettings[key];
+            if (['r_gain', 'g_gain', 'b_gain', 'contrast'].includes(key)) {
+                displayValue = displayValue.toFixed(2);
+            }
+            document.getElementById('val_' + key).innerText = displayValue;
+            
+            // Send the full JSON payload to Python
+            fetch('/update_settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentSettings)
+            });
+        }
+
+        function resetValues() {
+            // Restore sliders visually
+            const defaults = {
+                exposure: 1700, analogue_gain: 210, color_temp: 4500,
+                r_gain: 1.0, g_gain: 1.0, b_gain: 1.0, contrast: 1.2, brightness: 5
+            };
+
+            for (const [key, value] of Object.entries(defaults)) {
+                document.getElementById('inp_' + key).value = value;
+                updateSettings(key, value); // This updates the text and sends the request
+            }
+        }
+    </script>
+</body>
+</html>

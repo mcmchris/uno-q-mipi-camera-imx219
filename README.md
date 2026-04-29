@@ -1,2 +1,81 @@
-# uno-q-mipi-camera-imx219
-A custom V4L2 RAW capture pipeline and Python Software ISP for the IMX219 camera. Bypasses hardware memory limits to capture full 8MP 10-bit frames, applying JSON color profiles (PiSP) for precise colorimetry, AWB, and hardware exposure control.
+# IMX219 Advanced ISP & RAW Capture for Arduino UNO Q
+
+A custom V4L2 RAW capture pipeline and Python Software ISP for the IMX219 MIPI camera. This repository bypasses standard hardware memory limits to capture full 8MP 10-bit frames, applying JSON color profiles (PiSP) for precise colorimetry, Auto White Balance (AWB), and hardware exposure control.
+
+## 🛠️ Hardware Requirements
+To run this project, you will need the following hardware:
+* **Arduino UNO Q**
+* **Arduino UNO Media Carrier**
+* **IMX219 MIPI Camera Module** (Standard or NOIR)
+
+## 🎨 Color Correction & ISP Bypass
+By using lower-level settings and bypassing the default hardware ISP, you can get much better photos:
+
+![Color corrected photo (full resolution)](assets/the_take.png)
+
+Instead of relying on standard high-level video capture methods—which often struggle with memory allocation for high-resolution 10-bit RAW streams and apply generic, uncalibrated color profiles—this pipeline extracts the RAW DMA frames directly from the kernel using `v4l2-ctl`. 
+
+This approach allows us to build a custom Software Image Signal Processor (ISP) pipeline in Python. By manually demosaicing the RAW Bayer data and injecting the official JSON color matrices (CCM) and Auto White Balance (AWB) curves tailored for the IMX219 sensor, we regain absolute control over the color science. This method also allows us to:
+* Directly manipulate the physical analog gain and exposure registers of the sensor.
+* Safely handle the massive 8-Megapixel (3280x2464) data payload without memory bottlenecking.
+
+The result is a sharp, color-accurate photograph that perfectly matches the physical lighting of the environment.
+
+## ⚙️ Installation
+
+**1. Clone the repository:**
+
+```bash
+git clone [https://github.com/mcmchris/uno-q-mipi-camera-imx219.git](https://github.com/mcmchris/uno-q-mipi-camera-imx219.git)
+cd uno-q-mipi-camera-imx219
+```
+
+**2. Install dependencies:**
+
+Make sure you have the required Python libraries installed by using the provided `requirements.txt` file:
+
+```bash
+pip3 install -r requirements.txt
+```
+
+(Note: You will also need `v4l2-ctl` and `media-ctl` installed on your Linux system, which are usually included in the v4l-utils package).
+
+**3. Make the router scripts executable:**
+
+Grant execution permissions to the bash scripts inside the `router/` folder so Python can trigger the hardware MIPI routing automatically:
+
+```bash
+chmod +x router/*.sh
+```
+
+## 🚀 Usage & Scripts
+
+This repository includes two main workflows:
+
+**1. Real-Time Streaming & Tuning Dashboard (streaming.py)**
+
+This script launches a Flask web server that streams video from the camera while providing an advanced "PiSP Tuner" web dashboard. You can use it to calibrate the exact color temperature, RGB multipliers, exposure, and analog gain in real time.
+
+**Execution:**
+
+```bash
+sudo python3 streaming.py
+```
+
+**Expected Result:**
+
+The terminal will output the IP address of your board. Open a web browser on any device on the same local network and navigate to `http://<BOARD_IP>:8080`. You will see the live feed and the control panel. Any changes made on the sliders will instantly reflect on the camera's hardware registers and software color matrices.
+
+**2. Color Corrected Still Photo (perfect_photo.py)**
+
+Once you have found your ideal lighting and color settings in the dashboard, you can plug those numbers into the `SETTINGS` dictionary inside this script. This script bypasses OpenCV's video capture limits to grab a single, maximum-quality 8 Megapixel (3280x2464) frame directly from the kernel memory.
+
+**Execution:**
+
+```bash
+sudo python3 perfect_photo.py
+```
+
+**Expected Result:**
+
+The script will route the V4L2 hardware to maximum resolution, apply your custom exposure/gain, purge unstable initial frames to prevent Bayer phase shifting (magenta tints), capture the RAW data, and process the color science. Finally, it will save a pristine, full-resolution image named `color_corrected.jpg` in your project directory.
