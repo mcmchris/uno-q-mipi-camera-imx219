@@ -36,7 +36,7 @@ PHY="\"msm_csiphy${PORT}\""
 CSID="\"msm_csid${PORT}\""
 VFE="\"msm_vfe${PORT}_rdi0\""
 
-echo "Routing pipeline to RAW RDI (MAX RESOLUTION 8MP)..."
+echo "Routing pipeline to RAW RDI (3280x2464)..."
 media-ctl -l "${PHY}:1->${CSID}:0[1]"
 media-ctl -l "${CSID}:1->${VFE}:0[1]"
 
