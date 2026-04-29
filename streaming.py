@@ -27,16 +27,20 @@ def get_imx219_subdev():
     return None
 
 def get_video_node():
-    try:
-        out = subprocess.check_output("cam -l", shell=True, text=True)
-        for line in out.split('\n'):
-            if 'imx219' in line.lower():
-                if 'i2c-bus@0' in line:
-                    return '/dev/video0'
-                elif 'i2c-bus@1' in line:
-                    return '/dev/video4'
-    except Exception:
-        pass
+    for path in glob.glob('/sys/bus/i2c/devices/*/name'):
+        try:
+            with open(path, 'r') as f:
+                if 'imx219' in f.read().lower():
+                    # Obtenemos la ruta física del árbol de dispositivos
+                    of_node_path = os.path.join(os.path.dirname(path), 'of_node')
+                    real_path = os.path.realpath(of_node_path)
+                    
+                    if 'i2c-bus@0' in real_path:
+                        return '/dev/video0'
+                    elif 'i2c-bus@1' in real_path:
+                        return '/dev/video4'
+        except Exception:
+            continue
     return '/dev/video4' # Safe fallback
 
 imx219_subdev = get_imx219_subdev()
