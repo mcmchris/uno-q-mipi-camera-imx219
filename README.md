@@ -23,10 +23,10 @@ cd uno-q-mipi-camera-imx219
 
 **2. Install dependencies:**
 
-Make sure you have the required Python libraries installed by using the provided `requirements.txt` file:
+Make sure you have the required Python libraries installed by running:
 
 ```bash
-pip3 install -r requirements.txt
+sudo apt update && sudo apt install python3-flask python3-numpy python3-opencv -y
 ```
 
 (Note: You will also need `v4l2-ctl` and `media-ctl` installed on your Linux system, which are usually included in the v4l-utils package).
