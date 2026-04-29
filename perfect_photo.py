@@ -16,7 +16,7 @@ SETTINGS = {
     'analogue_gain': 220,    #
     'color_temp': 6150,      #
     'r_gain': 1.20,          #
-    'g_gain': 0.90,          #
+    'g_gain': 0.85,          #
     'b_gain': 1.15,          #
     'contrast': 1.95,        #
     'brightness': 5          #
