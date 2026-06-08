@@ -45,14 +45,18 @@
                         <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">
                             Exposure <span id="val_exposure" class="text-yellow-400 font-mono">1700</span>
                         </label>
-                        <input type="range" id="inp_exposure" min="10" max="1703" step="5" value="1700" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" oninput="updateSettings('exposure', this.value)">
+                        <input type="range" id="inp_exposure" min="10" max="1703" step="5" value="1700" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" 
+                            oninput="document.getElementById('val_exposure').innerText = this.value" 
+                            onchange="updateSettings('exposure', this.value)">
                     </div>
 
                     <div>
                         <label class="flex justify-between text-sm font-medium text-gray-300 mb-1">
                             Analog Gain <span id="val_analogue_gain" class="text-yellow-400 font-mono">232</span>
                         </label>
-                        <input type="range" id="inp_analogue_gain" min="0" max="232" step="2" value="232" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" oninput="updateSettings('analogue_gain', this.value)">
+                        <input type="range" id="inp_analogue_gain" min="0" max="232" step="2" value="232" class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-yellow-500" 
+                            oninput="document.getElementById('val_analogue_gain').innerText = this.value" 
+                            onchange="updateSettings('analogue_gain', this.value)">
                     </div>
                 </div>
 
@@ -107,7 +111,7 @@
     <script>
         // Initial camera state
         let currentSettings = {
-            profile: "imx219_noir_pisp.json", // <-- Agregamos el perfil por defecto
+            profile: "imx219_noir_pisp.json", 
             exposure: 1700,
             analogue_gain: 232,
             color_temp: 6100,

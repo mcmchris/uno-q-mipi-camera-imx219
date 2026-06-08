@@ -59,7 +59,9 @@ color_settings = {
     'contrast': 1.95,
     'brightness': 5,
     'color_temp': 6100, # Base color temperature (daylight)
-    'current_profile': 'imx219_noir_pisp.json'
+    'current_profile': 'imx219_noir_pisp.json',
+    'exposure': 1700,       
+    'analogue_gain': 232
 }
 
 # ==========================================
@@ -253,18 +255,13 @@ def update_settings():
     
     if 'profile' in data:
         new_profile_name = data['profile']
-        
-        # Only update if the profile has actually changed
         if new_profile_name != color_settings.get('current_profile'):
             profile_path = os.path.join('color-profiles', new_profile_name)
-            
             if os.path.exists(profile_path):
-                print(f"🔄 Cambiando físicamente a perfil: {new_profile_name}")
+                print(f"🔄 Physically changing to profile: {new_profile_name}")
                 new_profile_data = load_camera_profiles(profile_path)
-                
                 imx219_profile.clear()
                 imx219_profile.update(new_profile_data)
-                
                 color_settings['current_profile'] = new_profile_name
 
     # 1. Update software ISP variables
@@ -275,14 +272,17 @@ def update_settings():
     color_settings['brightness'] = int(data.get('brightness', color_settings['brightness']))
     color_settings['color_temp'] = int(data.get('color_temp', color_settings['color_temp']))
     
-    # 2. Send direct commands to V4L2 hardware (now via subdevice!)
+    # 2. Send direct commands to V4L2 hardware ONLY IF CHANGED
     if imx219_subdev:
-        if 'exposure' in data:
+        if 'exposure' in data and int(data['exposure']) != color_settings['exposure']:
             exp = int(data['exposure'])
             os.system(f"v4l2-ctl -d {imx219_subdev} --set-ctrl exposure={exp} > /dev/null 2>&1")
-        if 'analogue_gain' in data:
+            color_settings['exposure'] = exp  # Save new state
+            
+        if 'analogue_gain' in data and int(data['analogue_gain']) != color_settings['analogue_gain']:
             again = int(data['analogue_gain'])
             os.system(f"v4l2-ctl -d {imx219_subdev} --set-ctrl analogue_gain={again} > /dev/null 2>&1")
+            color_settings['analogue_gain'] = again  # Save new state
             
     return jsonify(success=True)
 
