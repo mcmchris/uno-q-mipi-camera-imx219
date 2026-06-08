@@ -21,11 +21,11 @@ CAM1_PATH = "/base/soc@0/cci@5c1b000/i2c-bus@0/sensor@10"
 def get_gstreamer_pipeline(cam_path):
     return (
         f'libcamerasrc camera-name="{cam_path}" ! '
-        'video/x-raw, width=640, height=480, framerate=30/1 ! '
+        'video/x-raw, width=632, height=480, framerate=30/1 ! '
         'videoconvert ! '
         'videoscale ! video/x-raw, width=400, height=480 ! '
         'videoconvert ! video/x-raw, format=BGR ! '
-        'appsink drop=true max-buffers=1'
+        'appsink drop=true max-buffers=1 sync=false'
     )
 
 class GStreamerCamera:
