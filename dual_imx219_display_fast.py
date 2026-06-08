@@ -5,6 +5,8 @@ import time
 import numpy as np
 import os
 import sys
+import subprocess
+import re
 
 # Set DISPLAY environment variable
 if "DISPLAY" not in os.environ:
@@ -18,10 +20,10 @@ os.system("media-ctl -d /dev/media0 -r > /dev/null 2>&1")
 CAM0_PATH = "/base/soc@0/cci@5c1b000/i2c-bus@1/sensor@10"
 CAM1_PATH = "/base/soc@0/cci@5c1b000/i2c-bus@0/sensor@10"
 
-def get_gstreamer_pipeline(cam_path):
+def get_gstreamer_pipeline(camera_name):
     width, height, framerate = 400, 480, 30
     
-    cam_prop = f'camera-name="{cam_path}" ! ' if cam_path else ""
+    cam_prop = f'camera-name="{camera_name}" ! ' if camera_name else ""
     return (
         f'libcamerasrc {cam_prop}'
         f'video/x-raw, width={width}, height={height}, framerate={framerate}/1 ! '
@@ -31,6 +33,23 @@ def get_gstreamer_pipeline(cam_path):
         'appsink drop=true max-buffers=1'
     )
 
+def detect_camera_name():
+    print("Searching for MIPI cameras with libcamera...")
+    try:
+        result = subprocess.run(['cam', '-l'], capture_output=True, text=True, check=True)
+        output = result.stdout + result.stderr
+        match = re.search(r'\((/base/[^\)]+)\)', output)
+        if match:
+            camera_path = match.group(1)
+            print(f"✅ Camera autodetected at: {camera_path}")
+            return camera_path
+        else:
+            print("⚠️ Camera path not found. Are the .dtbo overlays loaded?")
+            return None
+    except Exception as e:
+        print(f"❌ Error executing autodetection: {e}")
+        return None
+    
 class GStreamerCamera:
     def __init__(self, pipeline, cam_name):
         self.cam_name = cam_name
@@ -67,9 +86,10 @@ class GStreamerCamera:
 
 if __name__ == "__main__":
     print("Starting HW Accelerated Dual Viewer...")
-    
-    cam0 = GStreamerCamera(get_gstreamer_pipeline(CAM0_PATH), "CAM0 (CSI1)")
-    cam1 = GStreamerCamera(get_gstreamer_pipeline(CAM1_PATH), "CAM1 (CSI0)")
+    camera_name = detect_camera_name()
+
+    cam0 = GStreamerCamera(get_gstreamer_pipeline(camera_name), "CAM0 (CSI1)")
+    cam1 = GStreamerCamera(get_gstreamer_pipeline(camera_name), "CAM1 (CSI0)")
 
     window_name = "Dual_MIPI_Fast"
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
