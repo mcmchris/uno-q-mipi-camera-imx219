@@ -19,13 +19,16 @@ CAM0_PATH = "/base/soc@0/cci@5c1b000/i2c-bus@1/sensor@10"
 CAM1_PATH = "/base/soc@0/cci@5c1b000/i2c-bus@0/sensor@10"
 
 def get_gstreamer_pipeline(cam_path):
+    width, height, framerate = 400, 480, 30
+    
+    cam_prop = f'camera-name="{cam_path}" ! ' if cam_path else ""
     return (
-        f'libcamerasrc camera-name="{cam_path}" ! '
-        'video/x-raw, width=632, height=480, framerate=30/1 ! '
+        f'libcamerasrc {cam_prop}'
+        f'video/x-raw, width={width}, height={height}, framerate={framerate}/1 ! '
         'videoconvert ! '
-        'videoscale ! video/x-raw, width=400, height=480 ! '
-        'videoconvert ! video/x-raw, format=BGR ! '
-        'appsink drop=true max-buffers=1 sync=false'
+        'video/x-raw, format=BGR ! '
+        'videobalance saturation=1.2 contrast=1.1 ! '
+        'appsink drop=true max-buffers=1'
     )
 
 class GStreamerCamera:
