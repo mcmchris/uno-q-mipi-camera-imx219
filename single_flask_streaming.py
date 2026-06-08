@@ -12,42 +12,53 @@ from flask import Flask, render_template, Response, request, jsonify
 app = Flask(__name__, static_folder='templates/assets')
 
 # ==========================================
-# AUTO-DETECT V4L2 SUBDEVICE
+# AUTO-DETECT STRICT V4L2 HARDWARE
 # ==========================================
-def get_imx219_subdev():
-    for path in glob.glob('/sys/class/video4linux/v4l-subdev*/name'):
-        try:
-            with open(path, 'r') as f:
-                name = f.read().strip()
-                if 'imx219' in name.lower():
-                    subdev = path.split('/')[-2]
-                    return f"/dev/{subdev}"
-        except Exception:
-            continue
-    return None
+def get_camera_hardware():
+    video_node = '/dev/video4' # Safe fallback
+    subdev_node = None
+    target_bus = None
 
-def get_video_node():
+    # 1. Detect which I2C bus the active IMX219 is on
     for path in glob.glob('/sys/bus/i2c/devices/*/name'):
         try:
             with open(path, 'r') as f:
                 if 'imx219' in f.read().lower():
-                    # Obtenemos la ruta física del árbol de dispositivos
-                    of_node_path = os.path.join(os.path.dirname(path), 'of_node')
-                    real_path = os.path.realpath(of_node_path)
-                    
+                    real_path = os.path.realpath(os.path.join(os.path.dirname(path), 'of_node'))
                     if 'i2c-bus@0' in real_path:
-                        return '/dev/video0'
+                        target_bus = 'i2c-bus@0'
+                        video_node = '/dev/video0'
+                        break
                     elif 'i2c-bus@1' in real_path:
-                        return '/dev/video4'
+                        target_bus = 'i2c-bus@1'
+                        video_node = '/dev/video4'
+                        break
         except Exception:
             continue
-    return '/dev/video4' # Safe fallback
 
-imx219_subdev = get_imx219_subdev()
+    # 2. Find the V4L2 subdevice specifically tied to that exact bus
+    if target_bus:
+        for path in glob.glob('/sys/class/video4linux/v4l-subdev*/device/of_node'):
+            try:
+                real_path = os.path.realpath(path)
+                if target_bus in real_path:
+                    # Extract the 'v4l-subdevX' part from the path
+                    subdev_name = path.split('/')[-3]
+                    subdev_node = f"/dev/{subdev_name}"
+                    break
+            except Exception:
+                continue
+
+    return video_node, subdev_node
+
+# Initialize the global variables safely
+vid_node, imx219_subdev = get_camera_hardware()
+
 if imx219_subdev:
-    print(f"✓ IMX219 physical sensor detected at: {imx219_subdev}")
+    print(f"✓ IMX219 strict pairing successful: {vid_node} <--> {imx219_subdev}")
 else:
-    print("⚠ WARNING: IMX219 subdevice not found for hardware controls.")
+    print("⚠ WARNING: IMX219 subdevice pairing failed.")
+
 
 # ==========================================
 # CONFIGURATION AND STATE
@@ -158,7 +169,6 @@ def generate_frames():
     print("Running router script...")
     os.system("bash router/imx219-mid-router.sh")
 
-    vid_node = get_video_node()
     print(f"Opening DMA node {vid_node}...")
     
     width, height = 1640, 1232
