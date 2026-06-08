@@ -276,13 +276,17 @@ def update_settings():
     if imx219_subdev:
         if 'exposure' in data and int(data['exposure']) != color_settings['exposure']:
             exp = int(data['exposure'])
-            os.system(f"v4l2-ctl -d {imx219_subdev} --set-ctrl exposure={exp} > /dev/null 2>&1")
-            color_settings['exposure'] = exp  # Save new state
+            cmd = f"v4l2-ctl -d {imx219_subdev} --set-ctrl exposure={exp}"
+            print(f"🔧 Hardware Update: {cmd}")
+            os.system(cmd)  # Removed > /dev/null 2>&1
+            color_settings['exposure'] = exp
             
         if 'analogue_gain' in data and int(data['analogue_gain']) != color_settings['analogue_gain']:
             again = int(data['analogue_gain'])
-            os.system(f"v4l2-ctl -d {imx219_subdev} --set-ctrl analogue_gain={again} > /dev/null 2>&1")
-            color_settings['analogue_gain'] = again  # Save new state
+            cmd = f"v4l2-ctl -d {imx219_subdev} --set-ctrl analogue_gain={again}"
+            print(f"🔧 Hardware Update: {cmd}")
+            os.system(cmd)  # Removed > /dev/null 2>&1
+            color_settings['analogue_gain'] = again
             
     return jsonify(success=True)
 
