@@ -42,7 +42,7 @@ def get_video_node():
         try:
             with open(path, 'r') as f:
                 if 'imx219' in f.read().lower():
-                    # Obtenemos la ruta física del árbol de dispositivos
+                    # Get the route of the device tree
                     of_node_path = os.path.join(os.path.dirname(path), 'of_node')
                     real_path = os.path.realpath(of_node_path)
                     
@@ -67,7 +67,7 @@ def apply_hardware_settings():
         print("Warning: Subdevice not found. Hardware settings were not applied.")
 
 # ==========================================
-# 3. MOTOR DE COLOR (PiSP JSON)
+# 3. COLOR ENGINE (PiSP JSON)
 # ==========================================
 def load_camera_profiles(json_file):
     profiles = {'ccm': [], 'awb': [], 'gamma_lut': None}
